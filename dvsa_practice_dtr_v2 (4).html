@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Driving Test Report – Practice DTR</title>
+<style>
+  :root{
+    --bg:#e8e8e5;
+    --panel:#f3f3ef;
+    --btn:#ecece8;
+    --line:#c6c6c0;
+    --ink:#303332;
+    --muted:#6d716d;
+    --green:#4d7d72;
+    --orange:#b58b3f;
+    --red:#a9534b;
+    --blue:#365f83;
+    --shadow:0 2px 6px rgba(0,0,0,.14);
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#1e2323;
+    color:var(--ink);
+    overflow:hidden;
+  }
+  .app{
+    width:min(1180px,100%);
+    margin:0 auto;
+    height:100vh;
+    height:100dvh;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  #mainView{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    overflow:hidden;
+  }
+  header{
+    background:#f0f0ec;
+    border-bottom:1px solid #c4c4bf;
+    padding:6px 10px 7px;
+    flex:0 0 auto;
+  }
+  .head-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .title{font-size:15px;font-weight:700;min-width:100px}
+  .header-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex:1}
+  .mode-group{display:flex;gap:4px}
+  .mode{
+    border:1px solid #bdbdb7;background:#f6f6f2;border-radius:6px;
+    padding:5px 9px;min-width:36px;cursor:pointer;font-weight:700;font-size:12.5px;
+  }
+  .mode.active{background:#365f83;color:#fff;border-color:#365f83}
+  button{font:inherit}
+  .topbtn{
+    border:1px solid #bdbdb7;
+    background:#f6f6f2;
+    border-radius:7px;
+    padding:5px 10px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    font-size:12.5px;
+  }
+  .topbtn:active,.fault:active,.req:active{transform:translateY(1px)}
+  .topbtn.active{background:#365f83;color:#fff;border-color:#365f83}
+  .timer{
+    background:#355e82;
+    color:#fff;
+    border:none;
+    border-radius:7px;
+    padding:5px 10px;
+    cursor:pointer;
+    font-weight:700;
+    font-size:12.5px;
+  }
+  .meta{
+    margin-top:5px;
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  input[type=text]{
+    flex:1;
+    min-width:0;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:6px;
+    padding:6px 8px;
+    font-size:13px;
+  }
+  .pill{
+    border:1px solid var(--line);
+    background:#fafaf7;
+    border-radius:6px;
+    padding:5px 8px;
+    text-align:center;
+    font-weight:700;
+    font-size:12px;
+  }
+  .driver-pill{
+    flex:1;
+    min-width:0;
+    text-align:left;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    cursor:pointer;
+  }
+  .counter-pill{
+    flex:0 0 auto;
+    width:54px;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:5px;
+    padding:6px;
+    flex:1 1 auto;
+    overflow-y:auto;
+    align-content:start;
+  }
+  .col{display:flex;flex-direction:column;gap:5px}
+  .card{
+    background:var(--panel);
+    border:1px solid #c7c7c1;
+    border-radius:8px;
+    padding:5px;
+    box-shadow:var(--shadow);
+  }
+  .section-title{
+    font-size:10.5px;
+    font-weight:700;
+    color:#676a66;
+    margin:1px 2px 4px;
+    text-transform:uppercase;
+    letter-spacing:.2px;
+  }
+  .req-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .req{
+    border:1px solid var(--line);
+    background:#ecece8;
+    border-radius:7px;
+    min-height:28px;
+    text-align:left;
+    padding:5px 7px;
+    cursor:pointer;
+    position:relative;
+    font-size:12px;
+  }
+  .req.active{background:#e2ebe6;border-color:#86a79f}
+  .check{
+    width:14px;height:14px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    border:2px solid #c7c7c1;
+    color:transparent;font-size:9px;font-weight:900;
+    margin-right:5px;vertical-align:middle;
+    background:#f4f4f0;
+  }
+  .req.active .check{border-color:var(--green);background:var(--green);color:#fff}
+  .req-full{width:100%;margin-bottom:4px}
+  .req.mode-serious{background:#f1e6d0;border-color:var(--orange)}
+  .req.mode-serious .check{border-color:var(--orange);background:var(--orange);color:#fff}
+  .fault{
+    width:100%;
+    min-height:26px;
+    border:1px solid var(--line);
+    background:var(--btn);
+    border-radius:6px;
+    padding:4px 7px;
+    margin-bottom:3px;
+    text-align:left;
+    cursor:pointer;
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    align-items:center;
+    gap:5px;
+    font-size:12px;
+  }
+  .fault:last-child{margin-bottom:0}
+  .fault:hover{background:#e4e4df}
+  .fault .count{
+    min-width:18px;height:18px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:#676b68;color:#fff;font-weight:700;font-size:10.5px;
+  }
+  .fault[data-level="S"] .count{background:#696d69}
+  .fault[data-level="D"] .count{background:#696d69}
+  .fault[data-level="ETA"] .count{background:#6e5b8b}
+  .fault.mode-serious .count{background:#a17a35}
+  .fault.mode-dangerous .count{background:#9c4f48}
+  .sev-badge{display:inline-flex;gap:2px}
+  .sev-icon{
+    width:14px;height:14px;border-radius:50%;flex:none;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:8.5px;font-weight:800;color:#fff;
+  }
+  .sev-icon.sev-s{background:#d2a52e}
+  .sev-icon.sev-d{background:#c1453c}
+  .drop-toggle{
+    width:100%;display:flex;justify-content:space-between;align-items:center;
+    border:1px solid var(--line);background:var(--btn);border-radius:7px;
+    padding:5px 7px;cursor:pointer;font-weight:700;
+    margin-top:4px;font-size:12px;
+  }
+  .drop-toggle .chev{font-size:11px}
+  .drop-toggle.complete{background:#e2ebe6;border-color:#86a79f}
+  .drop-toggle.complete .check{border-color:var(--green);background:var(--green);color:#fff}
+  .dropdown-panel{display:none;margin-top:4px}
+  .dropdown-panel.open{display:block}
+  .maneuver-check{
+    display:flex;align-items:center;gap:6px;border:1px solid var(--line);
+    background:#f8f8f4;border-radius:6px;padding:5px;margin-bottom:4px;
+    cursor:pointer;font-size:12px;
+  }
+  .maneuver-check input{width:14px;height:14px}
+  .small-actions{
+    display:grid;grid-template-columns:1fr 1fr;gap:4px
+  }
+  .small{
+    border:1px solid var(--line);background:#efefeb;border-radius:6px;
+    padding:5px;cursor:pointer;min-height:26px;font-size:11.5px;
+  }
+  .small.active{background:#dde9e3;border-color:#8aa59c}
+  .end-test-btn{
+    background:var(--red);color:#fff;border-color:var(--red);
+    font-weight:700;
+  }
+  .results-page{
+    display:none;
+    height:100%;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px;
+    background:var(--bg);
+    overflow-y:auto;
+  }
+  .results-inner{width:100%;max-width:520px}
+  #outcomeTitle{font-size:26px;margin:0 0 6px;text-align:center}
+  #outcomeTitle.pass{color:var(--green)}
+  #outcomeTitle.fail{color:var(--red)}
+  #dfTitle{font-size:15px;font-weight:700;color:var(--muted);text-align:center;margin:0 0 22px}
+  .examiner-note{
+    background:#f6e3e1;border:1px solid var(--red);border-radius:var(--radius);
+    padding:12px;margin-bottom:16px;
+  }
+  .examiner-note .en-title{font-weight:800;color:var(--red);margin-bottom:4px}
+  .examiner-note .en-text{font-size:13px;color:var(--ink);line-height:1.4}
+  .fault-list{
+    background:var(--panel);border:1px solid #c7c7c1;
+    border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);
+  }
+  .result-row{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:9px 10px;border-bottom:1px solid var(--line);
+  }
+  .result-row:last-child{border-bottom:none}
+  .result-label{flex:1}
+  .result-icons{display:flex;gap:4px}
+  .result-count{
+    min-width:24px;height:24px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:#676b68;color:#fff;font-weight:700;font-size:12px;
+  }
+  .fault-list-empty{padding:14px;text-align:center;color:var(--muted)}
+  .next-btn{
+    display:block;width:100%;margin-top:22px;
+    border:1px solid var(--blue);background:var(--blue);color:#fff;
+    border-radius:8px;padding:12px;font-weight:700;cursor:pointer;
+  }
+  .next-btn:active{transform:translateY(1px)}
+  @media (max-width:480px){
+    .layout{grid-template-columns:1fr 1fr}
+    .col:last-child{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;align-items:start}
+    .col:last-child .card:first-child{grid-column:1/-1}
+    .meta{grid-template-columns:1fr 1fr}
+    .meta input{grid-column:1/-1}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="mainView">
+  <header>
+    <div class="head-row">
+      <div class="title">Test report</div>
+      <div class="header-actions">
+        <div class="mode-group" aria-label="Fault type">
+          <button class="mode active" data-mode="DF">DF</button>
+          <button class="mode" data-mode="S">S</button>
+          <button class="mode" data-mode="D">D</button>
+        </div>
+        <button class="topbtn" id="clearBtn">Clear</button>
+        <button class="timer" id="timerBtn">Start Timer</button>
+        <div class="pill" id="elapsed">00:00</div>
+        <button class="topbtn end-test-btn" id="endBtn">End Test</button>
+      </div>
+    </div>
+    <div class="meta">
+      <input id="driverName" type="text" placeholder="Driver name" value="">
+      <div class="pill driver-pill" id="driverPill" style="display:none">Driver: <span id="nameTitle"></span></div>
+      <div class="pill counter-pill">S: <span id="serious">0</span></div>
+      <div class="pill counter-pill">DF: <span id="faults">0</span></div>
+      <div class="pill counter-pill">D: <span id="dangerousHeader">0</span></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="col">
+      <section class="card">
+        <div class="section-title">Test requirements</div>
+        <button class="req req-full" id="eyesightBtn"><span class="check">✓</span>Eyesight Test</button>
+        <div class="req-grid">
+          <button class="req"><span class="check">✓</span>NS</button>
+          <button class="req"><span class="check">✓</span>NS</button>
+          <button class="req"><span class="check">✓</span>AS</button>
+          <button class="req"><span class="check">✓</span>HS/DS</button>
+        </div>
+        <button class="drop-toggle" id="manoeuvreToggle">
+          <span><span class="check">✓</span>Manoeuvres</span><span class="chev">▼</span>
+        </button>
+        <div class="dropdown-panel" id="manoeuvrePanel">
+          <label class="maneuver-check"><input type="checkbox" data-mano="Reverse/Right">Reverse/Right</label>
+          <label class="maneuver-check"><input type="checkbox" data-mano="Reverse Park (Road)">Reverse Park (Road)</label>
+          <label class="maneuver-check"><input type="checkbox" data-mano="Reverse Park (Car Park)">Reverse Park (Car Park)</label>
+          <label class="maneuver-check"><input type="checkbox" data-mano="Forward Park">Forward Park</label>
+          <div class="section-title" style="margin-top:8px">Manoeuvre marking points</div>
+          <div class="fault" data-label="Manoeuvres - Control"><span>Control</span><span class="count">0</span></div>
+          <div class="fault" data-label="Manoeuvres - Observation"><span>Observation</span><span class="count">0</span></div>
+        </div>
+        <div class="small-actions" style="margin-top:6px">
+          <button class="small" data-toggle="eco-c">ECO: C</button>
+          <button class="small" data-toggle="eco-p">ECO: P</button>
+          <button class="small" data-toggle="show-tell">Show me / Tell me</button>
+          <button class="small" data-toggle="controlled">Controlled stop</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">ETA</div>
+        <div class="small-actions">
+          <button class="small" data-toggle="eta-verbal">ETA: Verbal</button>
+          <button class="small" data-toggle="eta-physical">ETA: Physical</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Control</div>
+        <div class="fault" data-label="Accelerator"><span>Accelerator</span><span class="count">0</span></div>
+        <div class="fault" data-label="Clutch"><span>Clutch</span><span class="count">0</span></div>
+        <div class="fault" data-label="Gears"><span>Gears</span><span class="count">0</span></div>
+        <div class="fault" data-label="Footbrake"><span>Footbrake</span><span class="count">0</span></div>
+        <div class="fault" data-label="Parking brake"><span>Parking brake</span><span class="count">0</span></div>
+        <div class="fault" data-label="Steering"><span>Steering</span><span class="count">0</span></div>
+        <div class="fault" data-label="Precautions"><span>Precautions</span><span class="count">0</span></div>
+        <div class="fault" data-label="Ancillary controls"><span>Ancillary controls</span><span class="count">0</span></div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="card">
+        <div class="section-title">Move off</div>
+        <div class="fault" data-label="Safety"><span>Safety</span><span class="count">0</span></div>
+        <div class="fault" data-label="Control"><span>Control</span><span class="count">0</span></div>
+      </section>
+      <section class="card">
+        <div class="section-title">Use of mirrors</div>
+        <div class="fault" data-label="Signalling"><span>Signalling</span><span class="count">0</span></div>
+        <div class="fault" data-label="Change direction"><span>Change direction</span><span class="count">0</span></div>
+        <div class="fault" data-label="Change speed"><span>Change speed</span><span class="count">0</span></div>
+      </section>
+      <section class="card">
+        <div class="section-title">Signals</div>
+        <div class="fault" data-label="Necessary"><span>Necessary</span><span class="count">0</span></div>
+        <div class="fault" data-label="Correctly"><span>Correctly</span><span class="count">0</span></div>
+        <div class="fault" data-label="Timed"><span>Timed</span><span class="count">0</span></div>
+      </section>
+      <section class="card">
+        <div class="section-title">Junctions</div>
+        <div class="fault" data-label="Approach speed"><span>Approach speed</span><span class="count">0</span></div>
+        <div class="fault" data-label="Junctions - Observation"><span>Observation</span><span class="count">0</span></div>
+        <div class="fault" data-label="Turning right"><span>Turning right</span><span class="count">0</span></div>
+        <div class="fault" data-label="Turning left"><span>Turning left</span><span class="count">0</span></div>
+        <div class="fault" data-label="Cutting corners"><span>Cutting corners</span><span class="count">0</span></div>
+      </section>
+      <section class="card">
+        <div class="section-title">Judgement</div>
+        <div class="fault" data-label="Overtaking"><span>Overtaking</span><span class="count">0</span></div>
+        <div class="fault" data-label="Meeting"><span>Meeting</span><span class="count">0</span></div>
+        <div class="fault" data-label="Crossing"><span>Crossing</span><span class="count">0</span></div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="card">
+        <div class="section-title">Positioning</div>
+        <div class="fault" data-label="Normal driving"><span>Normal driving</span><span class="count">0</span></div>
+        <div class="fault" data-label="Lane discipline"><span>Lane discipline</span><span class="count">0</span></div>
+        <div class="fault" data-label="Pedestrian crossings"><span>Pedestrian crossings</span><span class="count">0</span></div>
+        <div class="fault" data-label="Position / normal stop"><span>Position / normal stop</span><span class="count">0</span></div>
+        <div class="fault" data-label="Awareness planning"><span>Awareness planning</span><span class="count">0</span></div>
+        <div class="fault" data-label="Clearance"><span>Clearance</span><span class="count">0</span></div>
+        <div class="fault" data-label="Following distance"><span>Following distance</span><span class="count">0</span></div>
+        <div class="fault" data-label="Use of speed"><span>Use of speed</span><span class="count">0</span></div>
+      </section>
+      <section class="card">
+        <div class="section-title">Progress</div>
+        <div class="fault" data-label="Appropriate speed"><span>Appropriate speed</span><span class="count">0</span></div>
+        <div class="fault" data-label="Undue hesitation"><span>Undue hesitation</span><span class="count">0</span></div>
+      </section>
+      <section class="card">
+        <div class="section-title">Response to signs/signals</div>
+        <div class="fault" data-label="Traffic signs"><span>Traffic signs</span><span class="count">0</span></div>
+        <div class="fault" data-label="Road markings"><span>Road markings</span><span class="count">0</span></div>
+        <div class="fault" data-label="Traffic lights"><span>Traffic lights</span><span class="count">0</span></div>
+        <div class="fault" data-label="Traffic controllers"><span>Traffic controllers</span><span class="count">0</span></div>
+        <div class="fault" data-label="Other road users"><span>Other road users</span><span class="count">0</span></div>
+      </section>
+    </div>
+  </div>
+  </div>
+
+  <div class="results-page" id="resultsPage">
+    <div class="results-inner">
+      <h1 id="outcomeTitle">Test Outcome: Passed</h1>
+      <div id="dfTitle">0 Driving Faults</div>
+      <div class="examiner-note" id="examinerNote" style="display:none">
+        <div class="en-title">Your examiner had to take action.</div>
+        <div class="en-text">During your test, your examiner had to take control of the vehicle to avoid an incident.</div>
+      </div>
+      <div class="fault-list" id="faultList"></div>
+      <button class="next-btn" id="nextTestBtn">Next Test</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const state = { counts:{}, severity:{}, requirements:[false,false,false,false], toggles:{}, manoeuvres:{}, mode:'DF', timer:0, running:false, interval:null };
+let removeMode = false;
+
+const manoeuvreToggle = document.getElementById('manoeuvreToggle');
+const manoeuvrePanel = document.getElementById('manoeuvrePanel');
+manoeuvreToggle.addEventListener('click', ()=>{
+  const wasOpen = manoeuvrePanel.classList.contains('open');
+  manoeuvrePanel.classList.toggle('open');
+  const isOpen = manoeuvrePanel.classList.contains('open');
+  manoeuvreToggle.querySelector('.chev').textContent = isOpen ? '▲' : '▼';
+  if(wasOpen && !isOpen){
+    updateManoeuvreComplete();
+  }
+});
+document.querySelectorAll('[data-mano]').forEach(cb=>{
+  cb.addEventListener('change',()=>{
+    state.manoeuvres[cb.dataset.mano]=cb.checked;
+  });
+});
+function updateManoeuvreComplete(){
+  const anyChecked = Object.values(state.manoeuvres).some(Boolean);
+  manoeuvreToggle.classList.toggle('complete', anyChecked);
+}
+
+document.querySelectorAll('.mode').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    state.mode=btn.dataset.mode;
+    document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active',x===btn));
+  });
+});
+
+function syncName(){
+  const n=document.getElementById('driverName').value.trim();
+  document.getElementById('nameTitle').textContent=n;
+}
+document.getElementById('driverName').addEventListener('input',syncName);
+document.getElementById('driverName').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    syncName();
+    document.getElementById('driverName').style.display='none';
+    document.getElementById('driverPill').style.display='';
+  }
+});
+document.getElementById('driverPill').addEventListener('click', ()=>{
+  document.getElementById('driverPill').style.display='none';
+  const input=document.getElementById('driverName');
+  input.style.display='';
+  input.focus();
+});
+
+document.querySelectorAll('.req-grid .req').forEach((b,i)=>{
+  b.addEventListener('click',()=>{
+    state.requirements[i]=!state.requirements[i];
+    b.classList.toggle('active',state.requirements[i]);
+    updateSummary();
+  });
+});
+
+const eyesightBtn = document.getElementById('eyesightBtn');
+state.eyesight = { checked:false, serious:false };
+eyesightBtn.addEventListener('click', ()=>{
+  if(state.mode==='S'){
+    if(state.eyesight.serious) return;
+    state.eyesight.serious = true;
+    state.counts['Eyesight Test'] = (state.counts['Eyesight Test']||0)+1;
+    if(!state.severity['Eyesight Test']) state.severity['Eyesight Test']={DF:0,S:0,D:0};
+    state.severity['Eyesight Test'].S += 1;
+    eyesightBtn.classList.add('active','mode-serious');
+    updateSummary();
+    document.getElementById('endBtn').click();
+    return;
+  }
+  state.eyesight.checked = !state.eyesight.checked;
+  eyesightBtn.classList.toggle('active', state.eyesight.checked);
+});
+
+document.querySelectorAll('.small[data-toggle]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const key=b.dataset.toggle;
+    state.toggles[key]=!state.toggles[key];
+    b.classList.toggle('active',state.toggles[key]);
+  });
+});
+
+const clearBtn = document.getElementById('clearBtn');
+clearBtn.addEventListener('click', ()=>{
+  removeMode = !removeMode;
+  clearBtn.classList.toggle('active', removeMode);
+});
+
+function updateFaultBadge(b){
+  const label=b.dataset.label;
+  const sev=state.severity[label]||{};
+  let html='';
+  if(sev.S>0) html+='<span class="sev-icon sev-s">S</span>';
+  if(sev.D>0) html+='<span class="sev-icon sev-d">D</span>';
+  b.querySelector('.sev-badge').innerHTML=html;
+}
+
+document.querySelectorAll('.fault').forEach(b=>{
+  const badge=document.createElement('span');
+  badge.className='sev-badge';
+  const countEl=b.querySelector('.count');
+  b.insertBefore(badge, countEl);
+});
+
+function handleFaultClick(b){
+  const label=b.dataset.label;
+  if(removeMode){
+    if((state.counts[label]||0)<=0) return;
+    state.counts[label]-=1;
+    if(state.severity[label]){
+      for(const k of [state.mode,'D','S','DF']){
+        if((state.severity[label][k]||0)>0){ state.severity[label][k]--; break; }
+      }
+    }
+    b.querySelector('.count').textContent=state.counts[label];
+    const sev=state.severity[label]||{};
+    b.classList.toggle('mode-serious',(sev.S||0)>0);
+    b.classList.toggle('mode-dangerous',(sev.D||0)>0);
+    updateFaultBadge(b);
+    updateSummary();
+    return;
+  }
+  const mode=state.mode;
+  state.counts[label]=(state.counts[label]||0)+1;
+  if(!state.severity[label]) state.severity[label]={DF:0,S:0,D:0};
+  state.severity[label][mode]=(state.severity[label][mode]||0)+1;
+  b.classList.toggle('mode-serious', (state.severity[label].S||0)>0);
+  b.classList.toggle('mode-dangerous', (state.severity[label].D||0)>0);
+  b.querySelector('.count').textContent=state.counts[label];
+  updateFaultBadge(b);
+  updateSummary();
+}
+
+function handleFaultContext(b){
+  const label=b.dataset.label;
+  if((state.counts[label]||0)<=0) return;
+  state.counts[label]-=1;
+  if(state.severity[label]){
+    for(const k of [state.mode,'D','S','DF']){
+      if((state.severity[label][k]||0)>0){ state.severity[label][k]--; break; }
+    }
+  }
+  b.querySelector('.count').textContent=state.counts[label];
+  const sev=state.severity[label]||{};
+  b.classList.toggle('mode-serious',(sev.S||0)>0);
+  b.classList.toggle('mode-dangerous',(sev.D||0)>0);
+  updateFaultBadge(b);
+  updateSummary();
+}
+
+document.getElementById('mainView').addEventListener('click', e=>{
+  const b=e.target.closest('.fault');
+  if(!b) return;
+  handleFaultClick(b);
+});
+document.getElementById('mainView').addEventListener('contextmenu', e=>{
+  const b=e.target.closest('.fault');
+  if(!b) return;
+  e.preventDefault();
+  handleFaultContext(b);
+});
+
+function updateSummary(){
+  let df=0, serious=0, dangerous=0;
+  Object.values(state.severity).forEach(v=>{
+    df += v.DF||0;
+    serious += v.S||0;
+    dangerous += v.D||0;
+  });
+  document.getElementById('faults').textContent=df;
+  document.getElementById('serious').textContent=serious;
+  document.getElementById('dangerousHeader').textContent=dangerous;
+}
+
+function renderTimer(){
+  const m=String(Math.floor(state.timer/60)).padStart(2,'0');
+  const s=String(state.timer%60).padStart(2,'0');
+  document.getElementById('elapsed').textContent=`${m}:${s}`;
+  document.getElementById('timerBtn').textContent=state.running?'Pause Timer':'Start Timer';
+}
+document.getElementById('timerBtn').addEventListener('click',()=>{
+  state.running=!state.running;
+  if(state.running){
+    state.interval=setInterval(()=>{state.timer++;renderTimer()},1000);
+  }else clearInterval(state.interval);
+  renderTimer();
+});
+
+document.getElementById('endBtn').addEventListener('click',()=>{
+  state.running=false; clearInterval(state.interval); renderTimer();
+
+  let df=0, serious=0, dangerous=0;
+  Object.values(state.severity).forEach(v=>{
+    df += v.DF||0;
+    serious += v.S||0;
+    dangerous += v.D||0;
+  });
+  const examinerAction = !!(state.toggles['eta-verbal'] || state.toggles['eta-physical']);
+  const passed = !examinerAction && serious===0 && dangerous===0 && df<=15;
+
+  const outcomeEl=document.getElementById('outcomeTitle');
+  outcomeEl.textContent=`Test Outcome: ${passed?'Passed':'Failed'}`;
+  outcomeEl.classList.toggle('pass',passed);
+  outcomeEl.classList.toggle('fail',!passed);
+
+  document.getElementById('dfTitle').textContent=`${df} Driving Fault${df===1?'':'s'}`;
+
+  document.getElementById('examinerNote').style.display = examinerAction ? '' : 'none';
+
+  const listEl=document.getElementById('faultList');
+  listEl.innerHTML='';
+  const entries=Object.entries(state.counts).filter(([,v])=>v>0);
+  if(entries.length===0){
+    listEl.innerHTML='<div class="fault-list-empty">No faults recorded.</div>';
+  }else{
+    entries.forEach(([label,count])=>{
+      const sev=state.severity[label]||{};
+      let icons='';
+      if(sev.S>0) icons+='<span class="sev-icon sev-s">S</span>';
+      if(sev.D>0) icons+='<span class="sev-icon sev-d">D</span>';
+      const row=document.createElement('div');
+      row.className='result-row';
+      row.innerHTML=`<span class="result-label">${label}</span><span class="result-icons">${icons}</span><span class="result-count">${count}</span>`;
+      listEl.appendChild(row);
+    });
+  }
+
+  document.getElementById('mainView').style.display='none';
+  document.getElementById('resultsPage').style.display='flex';
+});
+
+function resetAll(){
+  // reset state
+  state.counts={};
+  state.severity={};
+  state.requirements=[false,false,false,false];
+  state.toggles={};
+  state.manoeuvres={};
+  state.mode='DF';
+  state.timer=0;
+  state.running=false;
+  clearInterval(state.interval);
+  state.interval=null;
+  removeMode=false;
+  state.eyesight={ checked:false, serious:false };
+  document.getElementById('examinerNote').style.display='none';
+
+  // driver name
+  document.getElementById('driverName').value='';
+  document.getElementById('nameTitle').textContent='';
+  document.getElementById('driverName').style.display='';
+  document.getElementById('driverPill').style.display='none';
+
+  // mode buttons
+  document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active', x.dataset.mode==='DF'));
+
+  // clear button
+  document.getElementById('clearBtn').classList.remove('active');
+
+  // requirement buttons
+  document.querySelectorAll('.req').forEach(b=>b.classList.remove('active','mode-serious'));
+
+  // manoeuvre toggle + panel
+  manoeuvrePanel.classList.remove('open');
+  manoeuvreToggle.classList.remove('complete');
+  manoeuvreToggle.querySelector('.chev').textContent='▼';
+  document.querySelectorAll('[data-mano]').forEach(cb=>cb.checked=false);
+
+  // fault buttons
+  document.querySelectorAll('.fault').forEach(b=>{
+    b.querySelector('.count').textContent='0';
+    b.classList.remove('mode-serious','mode-dangerous');
+    const badge=b.querySelector('.sev-badge');
+    if(badge) badge.innerHTML='';
+  });
+
+  // small toggle buttons
+  document.querySelectorAll('.small[data-toggle]').forEach(b=>b.classList.remove('active'));
+
+  updateSummary();
+  renderTimer();
+
+  document.getElementById('resultsPage').style.display='none';
+  document.getElementById('mainView').style.display='';
+}
+
+document.getElementById('nextTestBtn').addEventListener('click', resetAll);
+
+updateSummary(); renderTimer();
+</script>
+</body>
+</html>
